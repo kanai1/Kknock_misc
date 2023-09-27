@@ -36,6 +36,11 @@ app.post('/login', async (req, res) => {
 	const resp = await axios.get(url)
 
 	console.log(resp.data)
+	if(resp.data == "User Does Not Exist") {
+		res.write("<script>alert('please register')</script>")
+		res.write("<script>window.location='/register'</script>")
+		return res.send()
+	}
 	if(resp.data == crypto.createHash('SHA256').update(password).digest('hex')) {
 		// 로그인 성공
 	}
