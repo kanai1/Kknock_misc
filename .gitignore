@@ -1,0 +1,5 @@
+# 환경변수파일
+.env
+
+# 모듈파일
+node_modules
