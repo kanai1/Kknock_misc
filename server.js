@@ -9,7 +9,8 @@ app.use(express.json())
 app.use(express.static('public'));
 app.set('views', './public');
 
-app.get('/', (req, res) => {res.render('index')})
+app.get('/')
+app.get('/login', (req, res) => {res.render('login')})
 app.get('/register', (req, res) => {res.render('register')})
 
 app.use((err, req, res, next) => {
