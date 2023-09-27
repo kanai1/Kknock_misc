@@ -24,14 +24,10 @@ let jwt_utils = {
 			token = req.cookies.token
 			jwt.verify(token, process.env.JWT_SECRET_CODE, (err, decoded) => {
 				if(err){
-					if(err.name == "TokenExpiredError")
-					{
-						res.write("<script>alert('please login again')</script>")
-						res.write("<script>window.location='/login'</script>")
-						res.send()
-						return next('route');
-					}
-					else return next(err)
+					res.write("<script>alert('please login again')</script>")
+					res.write("<script>window.location='/login'</script>")
+					res.send()
+					return next('route');
 				}
 				else{
 					req.jwt = decoded
