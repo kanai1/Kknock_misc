@@ -3,3 +3,5 @@
 
 # 모듈파일
 node_modules
+
+*.sql
