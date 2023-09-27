@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express')
 const cookieParser = require('cookie-parser')
 const jwt = require('./util/jwt_utils')
+const connection = require('./util/DB')
 
 const app = express()
 app.set("view engine", "ejs");
@@ -21,7 +22,27 @@ app.get('/', jwt.verify, (req, res) => {
 		res.render('index', {isLogin: req.jwt.isLogin, name: 'Anonymous', flag: flag})
 	}
 })
+
 app.get('/login', (req, res) => {res.render('login')})
+app.post('/login', (req, res) => {
+
+})
+app.get('/password/:id', (req, res) => {
+	const sql = "SELECT password FROM login WHERE id = ?"
+	const values = [req.params.id]
+
+	connection.query(sql, values, (err, rows) => {
+		if(err) {
+			res.send(err)
+		}
+		if(rows.length > 0) {
+			res.send(rows['password'])
+		}
+		else {
+			res.send("User Does Not Exist")
+		}
+	})
+})
 app.get('/register', (req, res) => {res.render('register')})
 
 app.use((err, req, res, next) => {
