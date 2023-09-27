@@ -10,7 +10,17 @@ app.use(express.json())
 app.use(express.static('public'));
 app.set('views', './public');
 
-app.get('/', jwt.verify, (req, res) => {res.render()})
+app.get('/', jwt.verify, (req, res) => {
+	let flag = "THIS IS NOT FLAG"
+
+	if(req.jwt.isLogin){
+		if(req.jwt.idx=="admin") flag = process.env.FLAG
+		res.render('index', {isLogin: req.jwt.isLogin, name: req.jwt.idx, flag: flag})
+	}
+	else{
+		res.render('index', {isLogin: req.jwt.isLogin, name: 'Anonymous', flag: flag})
+	}
+})
 app.get('/login', (req, res) => {res.render('login')})
 app.get('/register', (req, res) => {res.render('register')})
 
