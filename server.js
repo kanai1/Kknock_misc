@@ -3,11 +3,14 @@ const express = require('express')
 const cookieParser = require('cookie-parser')
 const jwt = require('./util/jwt_utils')
 const connection = require('./util/DB')
+const axios = require('axios')
+const crypto = require('crypto');
 
 const app = express()
 app.set("view engine", "ejs");
 app.use(cookieParser())
 app.use(express.json())
+app.use(express.urlencoded({ extended: false }));
 app.use(express.static('public'));
 app.set('views', './public');
 
@@ -24,8 +27,22 @@ app.get('/', jwt.verify, (req, res) => {
 })
 
 app.get('/login', (req, res) => {res.render('login')})
-app.post('/login', (req, res) => {
+app.post('/login', async (req, res) => {
+	const host = req.get('HOST') // localhost:8888
+	const id = req.body.id
+	const password = req.body.password
+	const url = `http://${host}/password/${id}`
 
+	const resp = await axios.get(url)
+
+	console.log(resp.data)
+	if(resp.data == crypto.createHash('SHA256').update(password).digest('hex')) {
+		// 로그인 성공
+	}
+	else {
+		//로그인 실패
+	}
+	
 })
 app.get('/password/:id', (req, res) => {
 	const sql = "SELECT password FROM login WHERE id = ?"
@@ -36,12 +53,13 @@ app.get('/password/:id', (req, res) => {
 			res.send(err)
 		}
 		if(rows.length > 0) {
-			res.send(rows['password'])
+			res.send(rows[0]['password'])
 		}
 		else {
 			res.send("User Does Not Exist")
 		}
 	})
+	
 })
 app.get('/register', (req, res) => {res.render('register')})
 
