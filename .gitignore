@@ -5,3 +5,6 @@
 node_modules
 
 *.sql
+
+#도커용 파일
+.dockerignore
