@@ -63,13 +63,13 @@ app.get('/password/:id', (req, res) => {
 
 	connection.query(sql, values, (err, rows) => {
 		if(err) {
-			return res.send("500 Error")
+			res.send("500 Error")
 		}
 		else if(rows.length > 0) {
-			return res.send(rows[0]['password'])
+			res.send(rows[0]['password'])
 		}
 		else {
-			return res.send("User Does Not Exist")
+			res.send("User Does Not Exist")
 		}
 	})
 	
@@ -87,21 +87,21 @@ app.post('/register', (req, res) => {
 			if(err.name == "ER_DUP_ENTRY") {
 				res.write("<script>alert('Id already exist.')</script>")
 				res.write("<script>window.location='/register'</script>")
-				return res.send()
+				res.send()
 			}
 			else if(err.name == "ER_DATA_TOO_LONG") {
 				res.write("<script>alert('Id is too long.')</script>")
 				res.write("<script>window.location='/register'</script>")
-				return res.send()
+				res.send()
 			}
 			else {
-				return next(err)
+				next(err)
 			}
 		}
 		else {
 			res.write("<script>alert('Success to Register.\\nPlease Login.')</script>")
 			res.write("<script>window.location='/login'</script>")
-			return res.send()
+			res.send()
 		}
 	})
 })
