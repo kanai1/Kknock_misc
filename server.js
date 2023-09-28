@@ -40,7 +40,11 @@ app.post('/login', async (req, res) => {
 		res.write("<script>window.location='/register'</script>")
 		return res.send()
 	}
-	if(resp.data == crypto.createHash('SHA256').update(password).digest('hex')) {
+	else if(resp.data == "500 Error") 
+	{
+		res.send("SomeThind Error")
+	}
+	else if(resp.data == crypto.createHash('SHA256').update(password).digest('hex')) {
 		const token = jwt.genarateAccessToken(id)
 		res.cookie('token', token)
 		res.redirect('/')
@@ -59,18 +63,40 @@ app.get('/password/:id', (req, res) => {
 
 	connection.query(sql, values, (err, rows) => {
 		if(err) {
-			res.send(err)
+			return res.send("500 Error")
 		}
-		if(rows.length > 0) {
-			res.send(rows[0]['password'])
+		else if(rows.length > 0) {
+			return res.send(rows[0]['password'])
 		}
 		else {
-			res.send("User Does Not Exist")
+			return res.send("User Does Not Exist")
 		}
 	})
 	
 })
 app.get('/register', (req, res) => {res.render('register')})
+app.post('/register', (req, res) => {
+	const id = req.body.id
+	const password = req.body.password
+
+	const select_sql = "SELECT * FROM login WHERE id = ?"
+	const select_values = [id]
+
+	const insert_sql = "INSERT INTO login(id, password) VALUES(?, ?)"
+	const insert_values = [id, password]
+
+	connection.query(select_sql, select_values, (err, log) => {
+		if(err) return next(err)
+
+	})
+
+	connection.query(insert_sql, insert_values, (err, log) => {
+		if(err) return next(err)
+		else {
+		
+		}
+	})
+})
 app.get('/logout', (req, res) => {res.clearCookie('token'); res.redirect('/')})
 
 app.use((err, req, res, next) => {
