@@ -35,17 +35,21 @@ app.post('/login', async (req, res) => {
 
 	const resp = await axios.get(url)
 
-	console.log(resp.data)
 	if(resp.data == "User Does Not Exist") {
 		res.write("<script>alert('please register')</script>")
 		res.write("<script>window.location='/register'</script>")
 		return res.send()
 	}
 	if(resp.data == crypto.createHash('SHA256').update(password).digest('hex')) {
-		// 로그인 성공
+		const token = jwt.genarateAccessToken(id)
+		res.cookie('token', token)
+		res.redirect('/')
 	}
 	else {
-		//로그인 실패
+		res.write("<script>alert('Incorrect Id or Password')</script>")
+		res.write("<script>window.location='/login'</script>")
+		res.send()
+		return res.send()
 	}
 	
 })
@@ -67,6 +71,7 @@ app.get('/password/:id', (req, res) => {
 	
 })
 app.get('/register', (req, res) => {res.render('register')})
+app.get('/logout', (req, res) => {res.clearCookie('token'); res.redirect('/')})
 
 app.use((err, req, res, next) => {
 	console.error(err.stack)
