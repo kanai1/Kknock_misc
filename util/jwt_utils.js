@@ -17,8 +17,7 @@ let jwt_utils = {
 	verify: function(req, res, next) {
 		if(!req.cookies.token) {
 			req.jwt = {isLogin: false}
-			console.log('no token', req.jwt)
-			return next();
+			next();
 		}
 		else {
 			token = req.cookies.token
@@ -27,12 +26,12 @@ let jwt_utils = {
 					res.write("<script>alert('please login again')</script>")
 					res.write("<script>window.location='/login'</script>")
 					res.send()
-					return next('route');
+					next('route');
 				}
 				else{
 					req.jwt = decoded
 					req.jwt.isLogin = true
-					return next()
+					next()
 				}
 			})
 		}
