@@ -15,10 +15,11 @@ app.use(express.static('public'));
 app.set('views', './public');
 
 app.get('/', jwt.verify, (req, res) => {
-	let flag = "THIS IS NOT FLAG"
+	let flag = "Please Login"
 
 	if(req.jwt.isLogin){
 		if(req.jwt.idx=="admin") flag = process.env.FLAG
+		else flag = "You are not admin."
 		res.render('index', {isLogin: req.jwt.isLogin, name: req.jwt.idx, flag: flag})
 	}
 	else{
@@ -38,7 +39,7 @@ app.post('/login', async (req, res) => {
 	if(resp.data == "User Does Not Exist") {
 		res.write("<script>alert('please register')</script>")
 		res.write("<script>window.location='/register'</script>")
-		return res.send()
+		res.send()
 	}
 	else if(resp.data == "500 Error") 
 	{
@@ -53,7 +54,6 @@ app.post('/login', async (req, res) => {
 		res.write("<script>alert('Incorrect Id or Password')</script>")
 		res.write("<script>window.location='/login'</script>")
 		res.send()
-		return res.send()
 	}
 	
 })
@@ -79,21 +79,29 @@ app.post('/register', (req, res) => {
 	const id = req.body.id
 	const password = req.body.password
 
-	const select_sql = "SELECT * FROM login WHERE id = ?"
-	const select_values = [id]
+	const sql = "INSERT INTO login(id, password) VALUES(?, SHA2(?, 256))"
+	const values = [id, password]
 
-	const insert_sql = "INSERT INTO login(id, password) VALUES(?, ?)"
-	const insert_values = [id, password]
-
-	connection.query(select_sql, select_values, (err, log) => {
-		if(err) return next(err)
-
-	})
-
-	connection.query(insert_sql, insert_values, (err, log) => {
-		if(err) return next(err)
+	connection.query(sql, values, (err, log) => {
+		if(err) {
+			if(err.name == "ER_DUP_ENTRY") {
+				res.write("<script>alert('Id already exist.')</script>")
+				res.write("<script>window.location='/register'</script>")
+				return res.send()
+			}
+			else if(err.name == "ER_DATA_TOO_LONG") {
+				res.write("<script>alert('Id is too long.')</script>")
+				res.write("<script>window.location='/register'</script>")
+				return res.send()
+			}
+			else {
+				return next(err)
+			}
+		}
 		else {
-		
+			res.write("<script>alert('Success to Register.\\nPlease Login.')</script>")
+			res.write("<script>window.location='/login'</script>")
+			return res.send()
 		}
 	})
 })
