@@ -5,6 +5,7 @@ const jwt = require('./util/jwt_utils')
 const connection = require('./util/DB')
 const axios = require('axios')
 const crypto = require('crypto');
+const { resourceLimits } = require('worker_threads');
 
 const app = express()
 app.set("view engine", "ejs");
@@ -57,53 +58,48 @@ app.post('/login', async (req, res) => {
 	}
 	
 })
-app.get('/password/:id', (req, res) => {
+app.get('/password/:id', async (req, res) => {
 	const sql = "SELECT password FROM login WHERE id = ?"
 	const values = [req.params.id]
 
-	connection.query(sql, values, (err, rows) => {
-		if(err) {
-			res.send("500 Error")
-		}
-		else if(rows.length > 0) {
-			res.send(rows[0]['password'])
-		}
-		else {
-			res.send("User Does Not Exist")
-		}
-	})
+	try {
+		const [password] = await connection.execute(sql, values)
+		if(password.length == 0) return res.send("User Does Not Exist")
+		return res.send(password[0]['password'])
+	} catch(err) {
+		return res.send("500 Error")
+	}
 	
 })
 app.get('/register', (req, res) => {res.render('register')})
-app.post('/register', (req, res) => {
+app.post('/register', async (req, res, next) => {
 	const id = req.body.id
 	const password = req.body.password
 
 	const sql = "INSERT INTO login(id, password) VALUES(?, SHA2(?, 256))"
 	const values = [id, password]
 
-	connection.query(sql, values, (err, log) => {
-		if(err) {
-			if(err.name == "ER_DUP_ENTRY") {
-				res.write("<script>alert('Id already exist.')</script>")
-				res.write("<script>window.location='/register'</script>")
-				res.send()
-			}
-			else if(err.name == "ER_DATA_TOO_LONG") {
-				res.write("<script>alert('Id is too long.')</script>")
-				res.write("<script>window.location='/register'</script>")
-				res.send()
-			}
-			else {
-				next(err)
-			}
-		}
-		else {
-			res.write("<script>alert('Success to Register.\\nPlease Login.')</script>")
-			res.write("<script>window.location='/login'</script>")
+	try{
+		await connection.execute(sql, values)
+		res.write("<script>alert('Success to Register.\\nPlease Login.')</script>")
+		res.write("<script>window.location='/login'</script>")
+		res.send()
+	}catch(err){
+		if(err.code == "ER_DUP_ENTRY") {
+			res.write("<script>alert('Id already exist.')</script>")
+			res.write("<script>window.location='/register'</script>")
 			res.send()
 		}
-	})
+		else if(err.code == "ER_DATA_TOO_LONG") {
+			res.write("<script>alert('Id is too long.')</script>")
+			res.write("<script>window.location='/register'</script>")
+			res.send()
+		}
+		else {
+			console.log(err)
+			next(err)
+		}
+	}
 })
 app.get('/logout', (req, res) => {res.clearCookie('token'); res.redirect('/')})
 
