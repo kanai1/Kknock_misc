@@ -33,20 +33,20 @@ app.post('/login', async (req, res) => {
 	const host = req.get('HOST') // localhost:8888
 	const id = req.body.id
 	const password = req.body.password
-	const url = `http://${host}/password/${id}`
+	const url = encodeURI(`http://${host}/password/${id}`)
 
 	const resp = await axios.get(url)
 
-	if(resp.data == "User Does Not Exist") {
+	if(resp.data === "User Does Not Exist") {
 		res.write("<script>alert('please register')</script>")
 		res.write("<script>window.location='/register'</script>")
 		res.send()
 	}
-	else if(resp.data == "500 Error") 
+	else if(resp.data === "500 Error" || resp.data === undefined) 
 	{
 		res.send("SomeThind Error")
 	}
-	else if(resp.data == crypto.createHash('SHA256').update(password).digest('hex')) {
+	else if(resp.data === crypto.createHash('SHA256').update(password).digest('hex')) {
 		const token = jwt.genarateAccessToken(id)
 		res.cookie('token', token)
 		res.redirect('/')
