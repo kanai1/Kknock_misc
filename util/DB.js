@@ -11,18 +11,4 @@ const connection = mysql.createPool({
   	connectionLimit: 10,
 });
 
-
-// (async () => {
-// 	await waitPort({ host: process.env.DB_HOST, port: 3306 });
-// 	console.log('MySQL server is ready, connecting...');
-
-// 	connection.connect((err) => {
-// 		if (err) {
-// 			console.error('Database connection error: ', err);
-// 		} else {
-// 		  console.log('Connected to the database');
-// 		}
-// 	});
-// })()
-
 module.exports = connection.promise()
